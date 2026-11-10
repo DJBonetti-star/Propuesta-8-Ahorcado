@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Menú principal{% endblock %}
+{% block content %}
+<main class="page-shell">
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">Panel de jugador</p>
+            <h1>Hola, {{ jugador.nombre if jugador else session.get('jugador') }}.</h1>
+            <p class="intro-copy">¿Qué te gustaría hacer hoy?</p>
+        </div>
+        <div class="menu-score" aria-label="Estadísticas del jugador">
+            <span><strong>{{ jugador.juegos_ganados if jugador else 0 }}</strong> victorias</span>
+            <span><strong>{{ jugador.juegos_perdidos if jugador else 0 }}</strong> derrotas</span>
+        </div>
+    </div>
+    <section class="menu-grid" aria-label="Opciones del juego">
+        <a class="menu-option menu-play" href="{{ url_for('categorias') }}">
+            <span class="option-index">01 / PARTIDA</span>
+            <span class="option-icon" aria-hidden="true">↗</span>
+            <strong>Jugar</strong>
+            <span>Elige una categoría y empieza una nueva ronda.</span>
+        </a>
+        <a class="menu-option menu-ranking" href="{{ url_for('ranking') }}">
+            <span class="option-index">02 / CLASIFICACIÓN</span>
+            <span class="option-icon" aria-hidden="true">↟</span>
+            <strong>Ranking</strong>
+            <span>Compara tus victorias con las de otros jugadores.</span>
+        </a>
+        <form class="menu-option menu-logout" action="{{ url_for('salir') }}" method="post">
+            <span class="option-index">03 / SESIÓN</span>
+            <span class="option-icon" aria-hidden="true">↙</span>
+            <strong>Salir</strong>
+            <span>Volver a la pantalla de inicio de sesión.</span>
+            <button type="submit" aria-label="Cerrar sesión"></button>
+        </form>
+    </section>
+</main>
+{% endblock %}

@@ -1,0 +1,39 @@
+/* ---------- Escenario: todas las capas miden lo mismo (1600x1200) ---------- */
+.escena { position: relative; width: 100%; max-width: 800px; aspect-ratio: 4 / 3; }
+.capa   { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* ---------- Monigote: se ve una sola expresión a la vez ---------- */
+.monigote { position: absolute; inset: 0; }
+.monigote .capa { opacity: 0; }
+.monigote .capa.activa { opacity: 1; }
+
+/* ---------- Pochoclos ---------- */
+.ventana { position: absolute; inset: 0; clip-path: inset(27.6% 20.5% 0 23.6%); }
+.vaiven  { position: absolute; inset: 0; }
+
+.palomitas {
+  --paso: 5.24%;
+  transform: translateY(calc((13.3 - var(--errores)) * var(--paso)));
+  transition: transform 0.7s ease-out;
+}
+
+.perdio .palomitas {
+  transform: translateY(0);
+  transition: transform 1s ease-in 0.9s;
+}
+
+.vaiven.subiendo { animation: vaiven 0.12s ease-in-out 6 alternate; }
+.perdio .vaiven.subiendo { animation-delay: 0.9s; animation-iteration-count: 8; }
+@keyframes vaiven {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(0.6%, -0.5%); }
+}
+
+/* ---------- Panel ---------- */
+.panel { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 12px; }
+.vidas { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+#pips { display: inline-flex; gap: 6px; }
+.pip { width: 12px; height: 12px; border-radius: 50%; background: #BA7517; transition: background 0.3s; }
+.pip.perdida { background: #D3D1C7; }
+#mensaje.perdiste { color: #A32D2D; font-weight: 500; }
+#mensaje.ganaste  { color: #3B6D11; font-weight: 500; }

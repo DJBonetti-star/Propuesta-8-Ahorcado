@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f3f5ef">
+    <title>{% block title %}Ahorcado{% endblock %} | La última letra</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body {% block body_attrs %}{% endblock %}>
+    <header class="topbar">
+        <a class="brand" href="{{ url_for('inicio') }}" aria-label="La última letra, inicio">
+            <span class="brand-mark" aria-hidden="true">A</span>
+            <span>LA ÚLTIMA LETRA</span>
+        </a>
+        {% if session.get('jugador') %}
+            <nav class="site-nav" aria-label="Navegación principal">
+                <a href="{{ url_for('menu') }}">Menú</a>
+                <a href="{{ url_for('categorias') }}">Jugar</a>
+                <a href="{{ url_for('ranking') }}">Ranking</a>
+                <form action="{{ url_for('salir') }}" method="post">
+                    <button class="nav-exit" type="submit">Salir</button>
+                </form>
+            </nav>
+        {% endif %}
+    </header>
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% if mensajes %}
+            <div class="flash-stack" role="status">
+                {% for categoria, mensaje in mensajes %}
+                    <p class="flash flash-{{ categoria }}">{{ mensaje }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+    <footer class="site-footer">
+        <span>La última letra</span>
+        <span>Un juego de ingenio</span>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Ranking{% endblock %}
+{% block content %}
+<main class="page-shell narrow-shell">
+    <div class="page-heading">
+        <div>
+            <p class="eyebrow">Clasificación general</p>
+            <h1>Quienes encuentran la palabra.</h1>
+            <p class="intro-copy">Ordenado por victorias; los empates se definen por menos derrotas.</p>
+        </div>
+        <a class="text-link" href="{{ url_for('menu') }}">← Volver al menú</a>
+    </div>
+    <section class="ranking-panel" aria-label="Tabla de posiciones">
+        <div class="ranking-row ranking-header"><span>Pos.</span><span>Jugador</span><span>Victorias</span><span>Derrotas</span></div>
+        {% for jugador in jugadores %}
+            <div class="ranking-row {% if session.get('jugador') == jugador.nombre %}ranking-current{% endif %}">
+                <span class="rank-number">{{ "%02d"|format(loop.index) }}</span>
+                <strong>{{ jugador.nombre }}</strong>
+                <span>{{ jugador.juegos_ganados }}</span>
+                <span>{{ jugador.juegos_perdidos }}</span>
+            </div>
+        {% else %}
+            <p class="empty-state">Todavía no hay resultados para mostrar.</p>
+        {% endfor %}
+    </section>
+</main>
+{% endblock %}

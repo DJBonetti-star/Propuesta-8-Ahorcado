@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}{{ categoria.nombre }}{% endblock %}
+{% block body_attrs %}data-ganado="{{ '1' if partida_terminada and not palabra_resuelta else '0' }}" data-perdio="{{ '1' if partida_terminada and palabra_resuelta else '0' }}"{% endblock %}
+{% block extra_head %}
+    {% if categoria_clave == 'peliculas' %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='escenario-peliculas.css') }}">
+    {% elif categoria_clave == 'comida' %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='escenario-comida.css') }}">
+    {% endif %}
+{% endblock %}
+{% block content %}
+<main class="game-shell theme-{{ categoria_clave }}">
+    <div class="game-topline">
+        <a class="text-link" href="{{ url_for('categorias') }}">← Cambiar categoría</a>
+        <span class="player-chip">En juego: {{ jugador.nombre if jugador else session.get('jugador') }}</span>
+    </div>
+    <section class="game-scene">
+        <div class="scene-copy">
+            <p class="eyebrow">Ahorcado / {{ categoria.nombre }}</p>
+            <h1>{{ categoria.nombre }}<br><em>en juego.</em></h1>
+            <div class="scene-labels" aria-label="Ambientación de la categoría">
+                {% for escena in categoria.escenas %}<span>{{ escena }}</span>{% endfor %}
+            </div>
+        </div>
+        <div class="round-state" aria-label="Intentos restantes">
+            <span class="round-state-label">Intentos</span>
+            <strong>{{ intentos }}<small> / {{ intentos_iniciales }}</small></strong>
+            <progress value="{{ intentos }}" max="{{ intentos_iniciales }}">{{ intentos }}</progress>
+        </div>
+    </section>
+
+    {% if categoria_clave == 'peliculas' %}
+        <section class="stage-demo" aria-label="Escenario temático de películas">
+            <div class="escenario" id="escenario" style="--errores: {{ intentos_iniciales - intentos }}">
+                <div class="escena">
+                    <img class="capa" src="{{ url_for('static', filename='img/peliculas/pochoclera-fondo.png') }}" alt="">
+                    <div class="monigote" id="monigote">
+                        <img class="capa activa" data-exp="1" src="{{ url_for('static', filename='img/peliculas/monigote-expresion1.png') }}" alt="">
+                        <img class="capa" data-exp="2" src="{{ url_for('static', filename='img/peliculas/monigote-expresion3.png') }}" alt="">
+                        <img class="capa" data-exp="3" src="{{ url_for('static', filename='img/peliculas/monigote-expresion3.png') }}" alt="">
+                        <img class="capa" data-exp="final" src="{{ url_for('static', filename='img/peliculas/monigote-expresionfinal.png') }}" alt="">
+                        <img class="capa" data-exp="ganar" src="{{ url_for('static', filename='img/peliculas/monigote-expresionganar.png') }}" alt="">
+                    </div>
+                    <div class="ventana">
+                        <div class="vaiven" id="vaiven">
+                            <img class="capa palomitas" src="{{ url_for('static', filename='img/peliculas/pochoclos.png') }}" alt="">
+                        </div>
+                    </div>
+                    <img class="capa" src="{{ url_for('static', filename='img/peliculas/pochoclera.png') }}" alt="">
+                </div>
+                <div class="panel">
+                    <div class="vidas">
+                        <span>Vidas</span>
+                        <span id="pips"></span>
+                        <span id="vidas-num">8</span>
+                    </div>
+                    <div id="mensaje">Temática: películas</div>
+                </div>
+            </div>
+        </section>
+    {% elif categoria_clave == 'comida' %}
+        <section class="stage-demo" aria-label="Escenario temático de comida">
+            <div class="escenario" id="escenario" style="--errores: {{ intentos_iniciales - intentos }}">
+                <div class="escena">
+                    <img class="capa" src="{{ url_for('static', filename='img/comida/fondo-hojas.png') }}" alt="">
+                    <img class="capa" src="{{ url_for('static', filename='img/comida/rama-tronco.png') }}" alt="">
+                    <div class="rama">
+                        <div class="monigote" id="monigote">
+                            <img class="capa activa" data-exp="1" src="{{ url_for('static', filename='img/comida/monigote-ramarota-expresion1.png') }}" alt="">
+                            <img class="capa" data-exp="2" src="{{ url_for('static', filename='img/comida/monigote-ramarota-expresion2.png') }}" alt="">
+                            <img class="capa" data-exp="3" src="{{ url_for('static', filename='img/comida/monigote-ramarota-expresion3.png') }}" alt="">
+                            <img class="capa" data-exp="final" src="{{ url_for('static', filename='img/comida/monigote-ramarota-expresionfinal.png') }}" alt="">
+                            <img class="capa" data-exp="ganar" src="{{ url_for('static', filename='img/comida/monigote-ramarota-expresionganar.png') }}" alt="">
+                        </div>
+                    </div>
+                    <div id="grietas">
+                        <img class="capa grieta" data-g="1" src="{{ url_for('static', filename='img/comida/grieta1.png') }}" alt="">
+                        <img class="capa grieta" data-g="2" src="{{ url_for('static', filename='img/comida/grieta2.png') }}" alt="">
+                        <img class="capa grieta" data-g="3" src="{{ url_for('static', filename='img/comida/grieta3.png') }}" alt="">
+                        <img class="capa grieta" data-g="4" src="{{ url_for('static', filename='img/comida/grieta4.png') }}" alt="">
+                        <img class="capa grieta" data-g="5" src="{{ url_for('static', filename='img/comida/grieta5.png') }}" alt="">
+                        <img class="capa grieta" data-g="6" src="{{ url_for('static', filename='img/comida/grieta6.png') }}" alt="">
+                        <img class="capa grieta" data-g="7" src="{{ url_for('static', filename='img/comida/grieta7.png') }}" alt="">
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="vidas">
+                        <span>Vidas</span>
+                        <span id="pips"></span>
+                        <span id="vidas-num">8</span>
+                    </div>
+                    <div id="mensaje">Temática: comida</div>
+                </div>
+            </div>
+        </section>
+    {% endif %}
+
+    <section class="play-area">
+        <div class="word-panel">
+            <p class="eyebrow">La palabra oculta</p>
+            <p class="word-display" aria-label="Palabra parcialmente revelada">{{ palabra_mostrada }}</p>
+            {% if palabra_resuelta %}<p class="solution-note">La palabra era <strong>{{ palabra_resuelta }}</strong>.</p>{% endif %}
+            <div class="letter-history">
+                <span class="history-label">Letras usadas</span>
+                {% if letras_intentadas %}
+                    <span class="history-letters">{{ letras_intentadas|join(' · ') }}</span>
+                {% else %}
+                    <span class="history-empty">Todavía ninguna</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="guess-panel">
+            {% if mensaje %}
+                <p class="result-message {% if partida_terminada and not palabra_resuelta %}result-win{% elif partida_terminada %}result-loss{% endif %}" role="status">{{ mensaje }}</p>
+            {% endif %}
+            {% if not partida_terminada %}
+                <form class="guess-form" action="{{ url_for('jugar') }}" method="post">
+                    <label for="letra">Prueba una letra</label>
+                    <div class="guess-controls">
+                        <input id="letra" name="letra" maxlength="1" autocomplete="off" required autofocus aria-label="Letra">
+                        <button class="button button-primary" type="submit">Probar <span aria-hidden="true">↗</span></button>
+                    </div>
+                </form>
+            {% else %}
+                <p class="eyebrow">Ronda finalizada</p>
+                <div class="end-actions">
+                    <a class="button button-primary" href="{{ url_for('reiniciar') }}">Otra palabra <span aria-hidden="true">↻</span></a>
+                    <a class="button button-quiet" href="{{ url_for('menu') }}">Menú principal</a>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+</main>
+{% if categoria_clave == 'peliculas' %}
+    <script src="{{ url_for('static', filename='escenario-peliculas.js') }}"></script>
+{% elif categoria_clave == 'comida' %}
+    <script src="{{ url_for('static', filename='escenario-comida.js') }}"></script>
+{% endif %}
+{% endblock %}
