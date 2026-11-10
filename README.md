@@ -1,101 +1,247 @@
-# Juego del ahorcado
+# La última letra — Juego del ahorcado
 
-Aplicación web en Python con Flask. La lógica está organizada con programación
-orientada a objetos:
+Aplicación web de ahorcado en español, desarrollada con Python y Flask. El
+jugador elige una categoría, adivina una palabra letra por letra y dispone de
+ocho intentos. El juego conserva las estadísticas de los jugadores en MongoDB.
 
-- `Jugador` representa al jugador y sus estadísticas.
-- `Palabra` y `PartidaAhorcado` administran las reglas y el estado de cada
-  partida.
-- `categorias.py` centraliza las palabras y la ambientación de las cinco
-  categorías, y selecciona una palabra al azar.
-- `RepositorioJugadores` concentra las operaciones de MongoDB.
-- `crear_app` configura Flask y conecta las rutas con los objetos anteriores.
+## Contenido
 
-MongoDB guarda cada jugador en `juego_ahorcado.jugadores`, con los campos
-`nombre`, `juegos_ganados` y `juegos_perdidos`.
+- [Requisitos](#requisitos)
+- [Instalación y ejecución en Windows](#instalación-y-ejecución-en-windows)
+- [Cómo jugar](#cómo-jugar)
+- [Estructura del proyecto](#estructura-del-proyecto)
+- [Rutas de la aplicación](#rutas-de-la-aplicación)
+- [Datos y persistencia](#datos-y-persistencia)
+- [Personalización](#personalización)
+- [Pruebas](#pruebas)
+- [Solución de problemas](#solución-de-problemas)
 
-## Instrucciones para ejecutar en Windows
+## Requisitos
 
-### 1. Instala los programas necesarios
+- Python 3.
+- MongoDB Community Server ejecutándose en el equipo, o una instancia de
+  MongoDB Atlas.
+- PowerShell para seguir los comandos de esta guía.
 
-Instala Python 3 y MongoDB Community Server. Durante la instalación de MongoDB,
-deja habilitada la opción de instalarlo como servicio de Windows.
+Las dependencias Python se enumeran en `requirements.txt`: Flask, PyMongo y
+Gunicorn.
 
-### 2. Inicia MongoDB
+## Instalación y ejecución en Windows
 
-Abre PowerShell. Si instalaste MongoDB como servicio, comprueba su estado:
+### 1. Iniciar MongoDB
+
+Para una instalación local de MongoDB como servicio, comprueba su estado desde
+PowerShell:
 
 ```powershell
 Get-Service MongoDB
 ```
 
-Si aparece detenido, inicia PowerShell como administrador y ejecuta:
+Si está detenido, abre PowerShell como administrador e inicia el servicio:
 
 ```powershell
 Start-Service MongoDB
 ```
 
-También puedes usar una instancia de MongoDB Atlas; en ese caso, ten a mano su
-cadena de conexión.
+Si usas Atlas, prepara la cadena de conexión y asegúrate de que la dirección IP
+del equipo esté autorizada en la configuración de red de Atlas.
 
-### 3. Abre la carpeta del proyecto
-
-En PowerShell, cambia la ruta por la ubicación donde guardaste el proyecto:
+### 2. Abrir la carpeta del proyecto
 
 ```powershell
 cd "C:\Users\Estudiante\Desktop\juego_ahorcado-main"
 ```
 
-### 4. Crea y activa un entorno virtual
+Si guardaste el proyecto en otra ubicación, sustituye la ruta por la correcta.
+
+### 3. Crear y activar un entorno virtual
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Si PowerShell impide activar el entorno, ejecuta una vez:
+Si PowerShell bloquea la activación del entorno, puedes habilitar scripts
+locales para tu usuario y volver a activar:
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+.\.venv\Scripts\Activate.ps1
 ```
 
-Luego vuelve a ejecutar el comando de activación.
-
-### 5. Instala las dependencias
+### 4. Instalar dependencias
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-### 6. Configura la conexión y ejecuta la aplicación
+### 5. Configurar y ejecutar
 
-Para MongoDB instalado en tu computadora:
+Con MongoDB local:
 
 ```powershell
 $env:MONGODB_URI = "mongodb://localhost:27017/"
-$env:FLASK_SECRET_KEY = "escribe-aqui-una-clave-local"
+$env:FLASK_SECRET_KEY = "reemplaza-por-una-clave-local"
 python app.py
 ```
 
-Para MongoDB Atlas, usa la cadena proporcionada por Atlas en lugar de la
-dirección local:
+Con MongoDB Atlas, usa la cadena de conexión de tu propio clúster:
 
 ```powershell
-$env:MONGODB_URI = "mongodb+srv://USUARIO:CLAVE@TU_CLUSTER/"
-$env:FLASK_SECRET_KEY = "escribe-aqui-una-clave-local"
+$env:MONGODB_URI = "PEGA_AQUI_LA_CADENA_DE_CONEXION_DE_ATLAS"
+$env:FLASK_SECRET_KEY = "reemplaza-por-una-clave-local"
 python app.py
 ```
 
-Mantén abierta esa ventana de PowerShell mientras uses la aplicación.
+No publiques ni compartas la cadena de conexión ni la clave secreta. La clave
+`FLASK_SECRET_KEY` protege la sesión de Flask; define una clave privada propia,
+especialmente si despliegas la aplicación. La aplicación también tiene una clave
+predeterminada para facilitar el inicio local, pero no debe usarse en producción.
 
-### 7. Abre el juego en el navegador
+Deja abierta la ventana de PowerShell mientras usas el juego. Flask inicia el
+servidor en modo de depuración al ejecutar `app.py`; ese modo es únicamente para
+desarrollo y no debe exponerse en Internet.
 
-Visita [http://127.0.0.1:5000](http://127.0.0.1:5000), escribe el nombre del
-jugador y selecciona **Continuar**. Desde el menú principal puedes iniciar una
-partida, elegir entre Comida, Industrial, Aplicaciones, Películas o Videojuegos,
-consultar el ranking y jugar con ocho intentos por ronda. Cada ronda elige una
-palabra al azar de su categoría. Al terminar, MongoDB actualiza las victorias o derrotas;
-**Otra palabra** inicia una nueva ronda dentro de la misma categoría.
+### 6. Abrir el juego
 
-La base de datos y la colección se crean automáticamente al registrar el primer
-jugador. Para detener el servidor, vuelve a PowerShell y pulsa `Ctrl+C`.
+En el navegador, visita [http://127.0.0.1:5000](http://127.0.0.1:5000). Esta
+dirección sirve en el mismo equipo donde se está ejecutando el servidor. Para
+detenerlo, vuelve a PowerShell y pulsa `Ctrl+C`.
+
+## Cómo jugar
+
+1. Escribe el nombre del jugador y selecciona **Continuar**.
+2. Desde el menú, inicia una partida o consulta el ranking.
+3. Selecciona una de las cinco categorías: Comida, Industrial, Aplicaciones,
+   Películas o Videojuegos.
+4. Introduce una letra por turno. Las letras correctas se revelan en la palabra;
+   cada letra incorrecta consume un intento. Una letra repetida no consume otro.
+5. Adivina todas las letras antes de quedarte sin los ocho intentos. Al terminar,
+   puedes comenzar otra palabra en la misma categoría o volver al menú.
+
+La palabra de la ronda se elige al azar de la lista de la categoría. El estado
+de la partida y el jugador actual se guardan en la sesión de Flask; las
+estadísticas de victorias y derrotas se guardan en MongoDB.
+
+## Estructura del proyecto
+
+```text
+juego_ahorcado-main/
+├── app.py                       # Configuración Flask y rutas
+├── categorias.py                # Categorías y selección aleatoria de palabras
+├── models.py                    # Jugador, Palabra y PartidaAhorcado
+├── repositories.py               # Acceso a los jugadores en MongoDB
+├── requirements.txt              # Dependencias Python
+├── templates/
+│   ├── base.html                 # Estructura común, navegación y mensajes
+│   ├── index.html                # Inicio y selección del nombre
+│   ├── menu.html                 # Menú principal
+│   ├── categorias.html           # Selección de categoría
+│   ├── juego.html                # Tablero y partida
+│   └── ranking.html              # Clasificación de jugadores
+├── static/
+│   ├── styles.css                # Estilos compartidos y del juego
+│   ├── escenario-comida.css      # Estilos del escenario de comida
+│   ├── escenario-comida.js       # Vidas y animación de comida
+│   ├── escenario-peliculas.css   # Estilos del escenario de películas
+│   └── escenario-peliculas.js    # Vidas y animación de películas
+└── tests/
+    └── test_flujo.py              # Pruebas automatizadas del flujo
+```
+
+### Responsabilidad de los módulos
+
+- **`app.py`** crea la aplicación con `crear_app`, conecta las rutas con las
+  plantillas, coordina las partidas y maneja los mensajes de error de MongoDB.
+  `crear_app` acepta un repositorio alternativo, lo que permite probar la
+  aplicación sin una base de datos real.
+- **`models.py`** contiene `Jugador` (estadísticas), `Palabra` (letras
+  descubiertas) y `PartidaAhorcado` (intentos, letras probadas y estado de
+  victoria o derrota). También permite convertir la partida a y desde el estado
+  serializable guardado en la sesión.
+- **`categorias.py`** define las palabras y etiquetas visuales de las categorías
+  y elige una palabra al azar.
+- **`repositories.py`** implementa las operaciones de persistencia de jugadores
+  usando MongoDB.
+- **`templates/`** contiene las páginas HTML de Jinja. `base.html` aporta el
+  marco común y las demás plantillas extienden ese marco.
+- **`static/`** contiene los estilos y el JavaScript de los escenarios
+  temáticos. La hoja `styles.css` usa un tono oscuro para que la palabra oculta
+  y las letras usadas se distingan sobre el fondo claro.
+- **`tests/`** comprueba navegación, categorías, reglas de intentos y ranking
+  con un repositorio en memoria.
+
+## Rutas de la aplicación
+
+| Método | Ruta | Función |
+|---|---|---|
+| `GET` | `/` | Muestra la página de inicio. |
+| `POST` | `/jugador` | Crea o recupera al jugador y abre su sesión. |
+| `GET` | `/menu` | Muestra el menú del jugador. |
+| `GET` | `/categorias` | Muestra las categorías disponibles. |
+| `POST` | `/categorias/<categoria>/jugar` | Selecciona categoría e inicia una partida. |
+| `GET`, `POST` | `/jugar` | Muestra la partida o registra una letra. |
+| `GET` | `/reiniciar` | Inicia otra palabra en la categoría elegida. |
+| `GET` | `/ranking` | Muestra los primeros jugadores ordenados por resultados. |
+| `POST` | `/salir` | Cierra la sesión actual. |
+
+Las páginas de menú, categorías, juego y ranking requieren una sesión de
+jugador. Si no hay sesión, la aplicación redirige al inicio.
+
+## Datos y persistencia
+
+La aplicación se conecta a MongoDB usando la variable de entorno `MONGODB_URI`.
+Guarda jugadores en la base `juego_ahorcado`, colección `jugadores`. Cada
+documento contiene:
+
+```json
+{
+  "nombre": "Nombre del jugador",
+  "juegos_ganados": 0,
+  "juegos_perdidos": 0
+}
+```
+
+Los jugadores se crean al registrarse por primera vez. Las estadísticas se
+actualizan al finalizar cada partida. El ranking muestra hasta 20 jugadores,
+ordenados por victorias descendentes, derrotas ascendentes y nombre.
+
+La palabra, las letras intentadas y los intentos restantes viven en la sesión
+del navegador, no en MongoDB. Al cerrar la sesión se elimina el jugador actual
+de la sesión; sus estadísticas guardadas permanecen.
+
+## Personalización
+
+- Para agregar o editar palabras, modifica la lista `palabras` de la categoría
+  correspondiente en `categorias.py`.
+- Para agregar una categoría, define sus datos en `CATEGORIAS` y actualiza las
+  vistas que presentan categorías o estilos específicos, si corresponde.
+- Los colores generales y la legibilidad de la palabra y letras se ajustan en
+  `static/styles.css`.
+- Los escenarios de Comida y Películas tienen lógica visual propia en sus
+  archivos `.js` y `.css`. Las demás categorías usan el diseño temático general.
+- El número inicial de intentos está definido por
+  `PartidaAhorcado.INTENTOS_INICIALES` en `models.py`. Los escenarios visuales
+  actuales usan ocho vidas.
+
+## Pruebas
+
+Desde la carpeta del proyecto, con las dependencias instaladas, ejecuta:
+
+```powershell
+python -m unittest discover -s tests
+```
+
+Las pruebas usan un repositorio en memoria y no necesitan conectarse a MongoDB.
+
+## Solución de problemas
+
+- **No se puede conectar a MongoDB:** verifica que el servicio local esté
+  iniciado o que `MONGODB_URI` sea correcta. En Atlas, revisa las credenciales,
+  la lista de IP permitidas y los permisos del usuario de base de datos.
+- **El navegador no abre la página:** confirma que `python app.py` sigue
+  ejecutándose y visita `http://127.0.0.1:5000` en el mismo equipo.
+- **PowerShell bloquea la activación del entorno:** sigue el paso de
+  `Set-ExecutionPolicy` de la sección de instalación.
+- **No se encuentra un paquete:** activa `.venv` y vuelve a ejecutar
+  `python -m pip install -r requirements.txt`.
