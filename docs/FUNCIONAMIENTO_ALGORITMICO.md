@@ -53,7 +53,8 @@ classDiagram
 
     class RepositorioJugadores {
         +coleccion
-        +crear_si_no_existe(nombre)
+        +crear_cuenta(nombre, hash_contrasena)
+        +obtener_hash_contrasena(nombre)
         +buscar(nombre)
         +registrar_resultado(nombre, gano)
     }
@@ -61,7 +62,8 @@ classDiagram
     class Flask {
         +crear_app()
         +inicio()
-        +seleccionar_jugador()
+        +registrarse()
+        +iniciar_sesion()
         +jugar()
         +reiniciar()
     }
@@ -85,8 +87,9 @@ classDiagram
   `a_estado` y `desde_estado` convierten la partida a un formato que se puede
   guardar y recuperar entre visitas del navegador.
 - **`RepositorioJugadores`** se ocupa de leer y actualizar los jugadores en
-    MongoDB, incluido el ranking ordenado por victorias. Así las reglas del juego
-    no necesitan conocer los detalles de la base de datos.
+    MongoDB, incluido el registro de hashes de contraseña y el ranking ordenado
+    por victorias. Así las reglas del juego no necesitan conocer los detalles de
+    la base de datos.
 - **`categorias.py`** contiene los catálogos de palabras y la ambientación de
     Comida, Industrial, Aplicaciones, Películas y Videojuegos. `palabra_aleatoria`
     elige el término de cada nueva ronda.

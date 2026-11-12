@@ -24,7 +24,8 @@ ocho intentos. El juego conserva las estadísticas de los jugadores en MongoDB.
 - PowerShell para seguir los comandos de esta guía.
 
 Las dependencias Python se enumeran en `requirements.txt`: Flask, PyMongo y
-Gunicorn.
+Gunicorn. Flask incluye Werkzeug, que se usa para almacenar contraseñas de
+forma segura.
 
 ## Instalación y ejecución en Windows
 
@@ -110,7 +111,9 @@ detenerlo, vuelve a PowerShell y pulsa `Ctrl+C`.
 
 ## Cómo jugar
 
-1. Escribe el nombre del jugador y selecciona **Continuar**.
+1. En la portada, elige **Registrarte** para crear una cuenta o **Iniciar
+   sesión** para volver a un perfil existente. El registro solicita una
+   contraseña de al menos ocho caracteres.
 2. Desde el menú, inicia una partida o consulta el ranking.
 3. Selecciona una de las cinco categorías: Comida, Industrial, Aplicaciones,
    Películas o Videojuegos.
@@ -134,7 +137,8 @@ juego_ahorcado-main/
 ├── requirements.txt              # Dependencias Python
 ├── templates/
 │   ├── base.html                 # Estructura común, navegación y mensajes
-│   ├── index.html                # Inicio y selección del nombre
+│   ├── index.html                # Portada con opciones de acceso
+│   ├── cuenta.html               # Formularios de registro e inicio de sesión
 │   ├── menu.html                 # Menú principal
 │   ├── categorias.html           # Selección de categoría
 │   ├── juego.html                # Tablero y partida
@@ -144,7 +148,10 @@ juego_ahorcado-main/
 │   ├── escenario-comida.css      # Estilos del escenario de comida
 │   ├── escenario-comida.js       # Vidas y animación de comida
 │   ├── escenario-peliculas.css   # Estilos del escenario de películas
-│   └── escenario-peliculas.js    # Vidas y animación de películas
+│   ├── escenario-peliculas.js    # Vidas y animación de películas
+│   ├── escenario-industrial.css  # Estilos del escenario industrial
+│   ├── escenario-industrial.js   # Vidas y piezas de la insignia industrial
+│   └── img/industrial/           # Capas PNG del escenario industrial
 └── tests/
     └── test_flujo.py              # Pruebas automatizadas del flujo
 ```
@@ -176,7 +183,8 @@ juego_ahorcado-main/
 | Método | Ruta | Función |
 |---|---|---|
 | `GET` | `/` | Muestra la página de inicio. |
-| `POST` | `/jugador` | Crea o recupera al jugador y abre su sesión. |
+| `GET`, `POST` | `/registrarse` | Muestra el registro y crea una cuenta con contraseña. |
+| `GET`, `POST` | `/iniciar-sesion` | Muestra el acceso y valida las credenciales. |
 | `GET` | `/menu` | Muestra el menú del jugador. |
 | `GET` | `/categorias` | Muestra las categorías disponibles. |
 | `POST` | `/categorias/<categoria>/jugar` | Selecciona categoría e inicia una partida. |
@@ -192,19 +200,23 @@ jugador. Si no hay sesión, la aplicación redirige al inicio.
 
 La aplicación se conecta a MongoDB usando la variable de entorno `MONGODB_URI`.
 Guarda jugadores en la base `juego_ahorcado`, colección `jugadores`. Cada
-documento contiene:
+documento contiene el nombre, las estadísticas y el hash de la contraseña
+(nunca se guarda la contraseña original):
 
 ```json
 {
   "nombre": "Nombre del jugador",
+  "hash_contrasena": "hash generado por Werkzeug",
   "juegos_ganados": 0,
   "juegos_perdidos": 0
 }
 ```
 
-Los jugadores se crean al registrarse por primera vez. Las estadísticas se
-actualizan al finalizar cada partida. El ranking muestra hasta 20 jugadores,
-ordenados por victorias descendentes, derrotas ascendentes y nombre.
+Los nombres de cuenta son únicos. Si ya hay un perfil antiguo sin contraseña,
+el registro con ese mismo nombre le añade una contraseña y conserva sus
+estadísticas. Las estadísticas se actualizan al finalizar cada partida. El
+ranking muestra hasta 20 jugadores, ordenados por victorias descendentes,
+derrotas ascendentes y nombre.
 
 La palabra, las letras intentadas y los intentos restantes viven en la sesión
 del navegador, no en MongoDB. Al cerrar la sesión se elimina el jugador actual

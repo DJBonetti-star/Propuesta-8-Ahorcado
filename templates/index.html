@@ -6,7 +6,7 @@
         <p class="eyebrow">Adivina antes de quedarte sin intentos</p>
         <h1>Una palabra.<br><em>Muchas posibilidades.</em></h1>
         <p class="intro-copy">Elige una temática, sigue las pistas que revelan tus letras y completa el tablero.</p>
-        <div class="letter-ribbon" aria-hidden="true"><span>A</span><span>_</span><span>O</span><span>_</span><span>_</span><span>D</span><span>O</span></div>
+        <div class="letter-ribbon" aria-hidden="true"><span>A</span><span>_</span><span>O</span><span>_</span><span>_</span><span>A</span><span>D</span><span>O</span></div>
     </section>
     <section class="login-panel" aria-labelledby="login-title">
         {% if jugador %}
@@ -20,12 +20,11 @@
         {% else %}
             <p class="eyebrow">Tu partida empieza aquí</p>
             <h2 id="login-title">Entra al juego</h2>
-            <form class="form-stack" action="{{ url_for('seleccionar_jugador') }}" method="post">
-                <label for="nombre">Nombre del jugador</label>
-                <input id="nombre" name="nombre" maxlength="80" autocomplete="nickname" placeholder="¿Cómo te llamas?" required>
-                <button class="button button-primary button-wide" type="submit">Continuar <span aria-hidden="true">→</span></button>
-            </form>
-            <p class="fine-print">Tus estadísticas quedan guardadas para volver a jugar.</p>
+            <p class="intro-copy access-intro">Crea tu cuenta o vuelve a jugar con tu perfil.</p>
+            <div class="access-actions">
+                <a class="button button-primary button-wide" href="{{ url_for('registrarse') }}">Registrarte <span aria-hidden="true">→</span></a>
+                <a class="button button-quiet button-wide" href="{{ url_for('iniciar_sesion') }}">Iniciar sesión <span aria-hidden="true">→</span></a>
+            </div>
         {% endif %}
     </section>
 </main>

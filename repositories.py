@@ -1,4 +1,5 @@
 from pymongo.collection import Collection
+from pymongo.errors import DuplicateKeyError
 
 from models import Jugador
 
@@ -7,19 +8,34 @@ class RepositorioJugadores:
     def __init__(self, coleccion: Collection):
         self.coleccion = coleccion
 
-    def crear_si_no_existe(self, nombre):
-        self.coleccion.update_one(
-            {"nombre": nombre},
-            {
-                "$setOnInsert": {
+    def crear_cuenta(self, nombre, hash_contrasena):
+        self.coleccion.create_index("nombre", unique=True)
+        try:
+            self.coleccion.insert_one(
+                {
                     "nombre": nombre,
+                    "hash_contrasena": hash_contrasena,
                     "juegos_ganados": 0,
                     "juegos_perdidos": 0,
                 }
-            },
-            upsert=True,
+            )
+        except DuplicateKeyError:
+            resultado = self.coleccion.update_one(
+                {
+                    "nombre": nombre,
+                    "hash_contrasena": {"$exists": False},
+                },
+                {"$set": {"hash_contrasena": hash_contrasena}},
+            )
+            if not resultado.matched_count:
+                raise
+
+    def obtener_hash_contrasena(self, nombre):
+        documento = self.coleccion.find_one(
+            {"nombre": nombre},
+            {"hash_contrasena": 1},
         )
-        return self.buscar(nombre)
+        return documento.get("hash_contrasena") if documento else None
 
     def buscar(self, nombre):
         documento = self.coleccion.find_one({"nombre": nombre})

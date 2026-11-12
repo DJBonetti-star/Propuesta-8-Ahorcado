@@ -6,6 +6,8 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='escenario-peliculas.css') }}">
     {% elif categoria_clave == 'comida' %}
         <link rel="stylesheet" href="{{ url_for('static', filename='escenario-comida.css') }}">
+    {% elif categoria_clave == 'industrial' %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='escenario-industrial.css') }}">
     {% endif %}
 {% endblock %}
 {% block content %}
@@ -93,6 +95,30 @@
                 </div>
             </div>
         </section>
+    {% elif categoria_clave == 'industrial' %}
+        <section class="stage-demo" aria-label="Escenario temático industrial">
+            <div class="escenario industrial-stage" id="escenario" style="--errores: {{ intentos_iniciales - intentos }}">
+                <h2 class="consigna">No pierdas la insignia</h2>
+                <div class="escena">
+                    <img class="capa pieza" data-n="7" style="transform-origin: 50.1% 75.5%" src="{{ url_for('static', filename='img/industrial/yunque7.png') }}" alt="">
+                    <img class="capa pieza" data-n="8" style="transform-origin: 53.3% 82.5%" src="{{ url_for('static', filename='img/industrial/patas8.png') }}" alt="">
+                    <img class="capa pieza" data-n="6" style="transform-origin: 60.5% 70.0%" src="{{ url_for('static', filename='img/industrial/hojas6.png') }}" alt="">
+                    <img class="capa pieza" data-n="5" style="transform-origin: 53.3% 69.6%" src="{{ url_for('static', filename='img/industrial/tapa5.png') }}" alt="">
+                    <img class="capa pieza" data-n="1" style="transform-origin: 52.6% 50.0%" src="{{ url_for('static', filename='img/industrial/calis1.png') }}" alt="">
+                    <img class="capa pieza" data-n="2" style="transform-origin: 65.0% 55.1%" src="{{ url_for('static', filename='img/industrial/plato2.png') }}" alt="">
+                    <img class="capa pieza" data-n="3" style="transform-origin: 66.2% 50.7%" src="{{ url_for('static', filename='img/industrial/cabeza3.png') }}" alt="">
+                    <img class="capa pieza" data-n="4" style="transform-origin: 76.8% 13.7%" src="{{ url_for('static', filename='img/industrial/fuego4.png') }}" alt="">
+                </div>
+                <div class="panel">
+                    <div class="vidas">
+                        <span>Vidas</span>
+                        <span id="pips"></span>
+                        <span id="vidas-num">{{ intentos }}</span>
+                    </div>
+                    <div id="mensaje" role="status">Temática: industrial</div>
+                </div>
+            </div>
+        </section>
     {% endif %}
 
     <section class="play-area">
@@ -135,5 +161,7 @@
     <script src="{{ url_for('static', filename='escenario-peliculas.js') }}"></script>
 {% elif categoria_clave == 'comida' %}
     <script src="{{ url_for('static', filename='escenario-comida.js') }}"></script>
+{% elif categoria_clave == 'industrial' %}
+    <script src="{{ url_for('static', filename='escenario-industrial.js') }}"></script>
 {% endif %}
 {% endblock %}

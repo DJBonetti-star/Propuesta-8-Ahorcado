@@ -2,7 +2,8 @@ import os
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from pymongo import MongoClient
-from pymongo.errors import PyMongoError
+from pymongo.errors import DuplicateKeyError, PyMongoError
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from categorias import CATEGORIAS, palabra_aleatoria
 from models import PartidaAhorcado, Palabra
@@ -36,19 +37,57 @@ def crear_app(repositorio_jugadores=None):
                 flash("No se pudieron consultar los datos del jugador en MongoDB.", "error")
         return render_template("index.html", jugador=jugador)
 
-    @app.route("/jugador", methods=["POST"])
-    def seleccionar_jugador():
+    @app.route("/registrarse", methods=["GET", "POST"])
+    def registrarse():
+        if request.method == "GET":
+            return render_template("cuenta.html", modo="registro")
+
         nombre = request.form.get("nombre", "").strip()
+        contrasena = request.form.get("contrasena", "")
+        confirmacion = request.form.get("confirmacion", "")
         if not nombre or len(nombre) > 80:
             flash("Ingresa un nombre de hasta 80 caracteres.", "error")
-            return redirect(url_for("inicio"))
+            return redirect(url_for("registrarse"))
+        if len(contrasena) < 8 or len(contrasena) > 128:
+            flash("La contraseña debe tener entre 8 y 128 caracteres.", "error")
+            return redirect(url_for("registrarse"))
+        if contrasena != confirmacion:
+            flash("Las contraseñas no coinciden.", "error")
+            return redirect(url_for("registrarse"))
 
         try:
-            repositorio_jugadores.crear_si_no_existe(nombre)
+            repositorio_jugadores.crear_cuenta(
+                nombre,
+                generate_password_hash(contrasena),
+            )
+        except DuplicateKeyError:
+            flash("Ese nombre ya está registrado. Inicia sesión o elige otro.", "error")
+            return redirect(url_for("registrarse"))
         except PyMongoError:
-            flash("No se pudo guardar el jugador. Verifica la conexión con MongoDB.", "error")
-            return redirect(url_for("inicio"))
+            flash("No se pudo crear la cuenta. Verifica la conexión con MongoDB.", "error")
+            return redirect(url_for("registrarse"))
 
+        session["jugador"] = nombre
+        return redirect(url_for("menu"))
+
+    @app.route("/iniciar-sesion", methods=["GET", "POST"])
+    def iniciar_sesion():
+        if request.method == "GET":
+            return render_template("cuenta.html", modo="inicio-sesion")
+
+        nombre = request.form.get("nombre", "").strip()
+        contrasena = request.form.get("contrasena", "")
+        try:
+            hash_guardado = repositorio_jugadores.obtener_hash_contrasena(nombre)
+        except PyMongoError:
+            flash("No se pudo iniciar sesión. Verifica la conexión con MongoDB.", "error")
+            return redirect(url_for("iniciar_sesion"))
+
+        if not hash_guardado or not check_password_hash(hash_guardado, contrasena):
+            flash("El nombre o la contraseña son incorrectos.", "error")
+            return redirect(url_for("iniciar_sesion"))
+
+        session.clear()
         session["jugador"] = nombre
         return redirect(url_for("menu"))
 

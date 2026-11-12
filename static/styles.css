@@ -64,6 +64,9 @@ h1 em, .login-copy h1 em { color: var(--green); font-weight: 400; }
 .form-stack label, .guess-form label { color: #344840; font-size: 13px; font-weight: 700; }
 .form-stack input, .form-stack select, .guess-controls input { width: 100%; min-height: 48px; padding: 0 14px; border: 1px solid #cbd6cc; border-radius: 4px; color: var(--ink); background: white; }
 .form-stack input::placeholder { color: #a4aea7; }
+.access-intro { margin-bottom: 22px; font-size: 14px; }
+.access-actions { display: grid; gap: 10px; }
+.access-actions .button-wide { margin-top: 0; }
 .button { min-height: 46px; display: inline-flex; align-items: center; justify-content: center; gap: 14px; padding: 0 18px; border: 1px solid transparent; border-radius: 4px; font-weight: 700; cursor: pointer; transition: background-color .18s ease, transform .18s ease; }
 .button:hover { transform: translateY(-2px); }
 .button-primary { color: #fff; background: var(--green); }

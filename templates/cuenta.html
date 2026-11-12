@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% set es_registro = modo == "registro" %}
+{% block title %}{{ "Registro" if es_registro else "Iniciar sesión" }}{% endblock %}
+{% block content %}
+<main class="login-layout">
+    <section class="login-copy">
+        <p class="eyebrow">La última letra</p>
+        <h1>{{ "Empieza tu" if es_registro else "Qué bueno" }}<br><em>{{ "aventura." if es_registro else "verte de nuevo." }}</em></h1>
+        <p class="intro-copy">{{ "Crea tu perfil para guardar tus partidas y competir en el ranking." if es_registro else "Inicia sesión para continuar jugando y consultar tus estadísticas." }}</p>
+        <div class="letter-ribbon" aria-hidden="true"><span>A</span><span>_</span><span>O</span><span>_</span><span>_</span><span>A</span><span>D</span><span>O</span></div>
+    </section>
+    <section class="login-panel" aria-labelledby="account-title">
+        <p class="eyebrow">{{ "Crea tu perfil" if es_registro else "Tu perfil te espera" }}</p>
+        <h2 id="account-title">{{ "Registrarte" if es_registro else "Iniciar sesión" }}</h2>
+        <form class="form-stack" action="{{ url_for('registrarse' if es_registro else 'iniciar_sesion') }}" method="post">
+            <label for="nombre">Nombre del jugador</label>
+            <input id="nombre" name="nombre" maxlength="80" autocomplete="username" placeholder="¿Cómo te llamas?" required>
+            <label for="contrasena">Contraseña</label>
+            <input id="contrasena" name="contrasena" type="password" minlength="8" maxlength="128" autocomplete="{{ 'new-password' if es_registro else 'current-password' }}" placeholder="Mínimo 8 caracteres" required>
+            {% if es_registro %}
+                <label for="confirmacion">Confirma tu contraseña</label>
+                <input id="confirmacion" name="confirmacion" type="password" minlength="8" maxlength="128" autocomplete="new-password" placeholder="Escríbela de nuevo" required>
+            {% endif %}
+            <button class="button button-primary button-wide" type="submit">{{ "Crear cuenta" if es_registro else "Entrar" }} <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="fine-print">{{ "¿Ya tienes una cuenta?" if es_registro else "¿Todavía no tienes cuenta?" }} <a class="text-link" href="{{ url_for('iniciar_sesion' if es_registro else 'registrarse') }}">{{ "Inicia sesión" if es_registro else "Regístrate" }}</a></p>
+    </section>
+</main>
+{% endblock %}
