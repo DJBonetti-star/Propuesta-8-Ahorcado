@@ -221,6 +221,49 @@ class FlujoAhorcadoTests(unittest.TestCase):
             respuesta = self.cliente.post("/jugar", data={"letra": letra})
         self.assertIn(b'data-ganado="1"', respuesta.data)
 
+    def test_escenario_videojuegos_refleja_vidas_victoria_y_derrota(self):
+        self.iniciar_sesion()
+        self.cliente.post("/categorias/videojuegos/jugar")
+
+        respuesta = self.cliente.get("/jugar")
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertIn(b"escenario-videojuegos.css", respuesta.data)
+        self.assertIn(b"escenario-videojuegos.js", respuesta.data)
+        self.assertIn(b"INSERT COIN", respuesta.data)
+        self.assertIn(b'data-vida-perdida="0"', respuesta.data)
+        for ruta in (
+            "/static/escenario-videojuegos.css",
+            "/static/escenario-videojuegos.js",
+        ):
+            respuesta_asset = self.cliente.get(ruta)
+            self.assertEqual(respuesta_asset.status_code, 200)
+            respuesta_asset.close()
+
+        with self.cliente.session_transaction() as estado:
+            palabra = estado["partida"]["palabra"].upper()
+        letras_ausentes = [letra for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if letra not in palabra]
+
+        respuesta = self.cliente.post("/jugar", data={"letra": letras_ausentes[0]})
+        self.assertIn(b'data-vida-perdida="1"', respuesta.data)
+        self.assertIn(b"--errores: 1", respuesta.data)
+        self.assertIn(b">7</span>", respuesta.data)
+        respuesta = self.cliente.post("/jugar", data={"letra": letras_ausentes[0]})
+        self.assertIn(b'data-vida-perdida="0"', respuesta.data)
+
+        for letra in sorted(set(caracter for caracter in palabra if caracter.isalpha())):
+            respuesta = self.cliente.post("/jugar", data={"letra": letra})
+        self.assertIn(b'class="arcade-stage gano"', respuesta.data)
+        self.assertIn("¡Nivel superado!".encode(), respuesta.data)
+
+        self.cliente.get("/reiniciar")
+        with self.cliente.session_transaction() as estado:
+            palabra = estado["partida"]["palabra"].upper()
+        letras_ausentes = [letra for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if letra not in palabra]
+        for letra in letras_ausentes[:8]:
+            respuesta = self.cliente.post("/jugar", data={"letra": letra})
+        self.assertIn(b'class="arcade-stage perdio"', respuesta.data)
+        self.assertIn(b"GAME OVER", respuesta.data)
+
     def test_ranking_ordena_por_victorias(self):
         self.iniciar_sesion()
         self.repositorio.jugadores["Beto"] = SimpleNamespace(

@@ -140,10 +140,13 @@ def crear_app(repositorio_jugadores=None):
             return redirect(url_for("categorias"))
 
         partida = obtener_partida()
+        vida_perdida = False
         if request.method == "POST":
             letra = request.form.get("letra", "").strip().upper()
             if len(letra) == 1 and letra.isalpha() and not partida.terminada:
+                intentos_antes = partida.intentos_restantes
                 partida.comprobar_letra(letra)
+                vida_perdida = partida.intentos_restantes < intentos_antes
             session["partida"] = partida.a_estado()
 
         gano = partida.gano
@@ -177,6 +180,7 @@ def crear_app(repositorio_jugadores=None):
             mensaje=mensaje,
             partida_terminada=partida.terminada,
             palabra_resuelta=partida.palabra.palabra if partida.perdio else None,
+            vida_perdida=vida_perdida,
         )
 
     @app.route("/reiniciar")

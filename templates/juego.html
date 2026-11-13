@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ categoria.nombre }}{% endblock %}
-{% block body_attrs %}data-ganado="{{ '1' if partida_terminada and not palabra_resuelta else '0' }}" data-perdio="{{ '1' if partida_terminada and palabra_resuelta else '0' }}"{% endblock %}
+{% block body_attrs %}data-ganado="{{ '1' if partida_terminada and not palabra_resuelta else '0' }}" data-perdio="{{ '1' if partida_terminada and palabra_resuelta else '0' }}" data-vida-perdida="{{ '1' if vida_perdida else '0' }}"{% endblock %}
 {% block extra_head %}
     {% if categoria_clave == 'peliculas' %}
         <link rel="stylesheet" href="{{ url_for('static', filename='escenario-peliculas.css') }}">
@@ -8,6 +8,8 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='escenario-comida.css') }}">
     {% elif categoria_clave == 'industrial' %}
         <link rel="stylesheet" href="{{ url_for('static', filename='escenario-industrial.css') }}">
+    {% elif categoria_clave == 'videojuegos' %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='escenario-videojuegos.css') }}">
     {% endif %}
 {% endblock %}
 {% block content %}
@@ -119,6 +121,68 @@
                 </div>
             </div>
         </section>
+    {% elif categoria_clave == 'videojuegos' %}
+        <section class="stage-demo" aria-label="Escenario retro de videojuegos">
+            <div class="arcade-stage{% if partida_terminada and not palabra_resuelta %} gano{% elif palabra_resuelta %} perdio{% endif %}" id="escenario" style="--errores: {{ intentos_iniciales - intentos }}">
+                <div class="arcade-cabinet">
+                    <div class="arcade-marquee">
+                        <span>LA ÚLTIMA LETRA</span>
+                        <strong>ARCADE</strong>
+                    </div>
+                    <div class="arcade-bezel">
+                        <div class="arcade-screen">
+                            <div class="screen-hud">
+                                <span>PLAYER 1</span>
+                                <span>HP <b id="hp">{{ intentos }}</b></span>
+                            </div>
+                            <div class="game-world" aria-hidden="true">
+                                <span class="world-sun"></span>
+                                <span class="world-cloud cloud-one"></span>
+                                <span class="world-cloud cloud-two"></span>
+                                <span class="world-star star-one">✦</span>
+                                <span class="world-star star-two">✦</span>
+                                <div class="world-platform"></div>
+                                <div class="pixel-hero">
+                                    <span class="hero-head"></span>
+                                    <span class="hero-body"></span>
+                                    <span class="hero-boots"></span>
+                                </div>
+                                <div class="level-banner">
+                                    {% if partida_terminada and not palabra_resuelta %}
+                                        ¡NIVEL SUPERADO!
+                                    {% elif palabra_resuelta %}
+                                        GAME OVER
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div id="mensaje" class="arcade-message" role="status" aria-live="polite">
+                                {% if partida_terminada and not palabra_resuelta %}
+                                    ¡Nivel superado!
+                                {% elif palabra_resuelta %}
+                                    GAME OVER · Inténtalo otra vez
+                                {% else %}
+                                    ¡A jugar!
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="arcade-controls" aria-hidden="true">
+                        <div class="arcade-dpad"><span></span></div>
+                        <span class="console-label">INSERT COIN · PRESS START</span>
+                        <div class="action-buttons"><span>A</span><span>B</span></div>
+                    </div>
+                    <div class="arcade-speaker" aria-hidden="true"></div>
+                </div>
+                <div class="panel arcade-panel">
+                    <div class="vidas">
+                        <span>Vidas</span>
+                        <span id="pips"></span>
+                        <span id="vidas-num">{{ intentos }}</span>
+                    </div>
+                    <span class="arcade-caption">Un error, una vida menos. ¡Sigue jugando!</span>
+                </div>
+            </div>
+        </section>
     {% endif %}
 
     <section class="play-area">
@@ -163,5 +227,7 @@
     <script src="{{ url_for('static', filename='escenario-comida.js') }}"></script>
 {% elif categoria_clave == 'industrial' %}
     <script src="{{ url_for('static', filename='escenario-industrial.js') }}"></script>
+{% elif categoria_clave == 'videojuegos' %}
+    <script src="{{ url_for('static', filename='escenario-videojuegos.js') }}"></script>
 {% endif %}
 {% endblock %}

@@ -151,6 +151,8 @@ juego_ahorcado-main/
 │   ├── escenario-peliculas.js    # Vidas y animación de películas
 │   ├── escenario-industrial.css  # Estilos del escenario industrial
 │   ├── escenario-industrial.js   # Vidas y piezas de la insignia industrial
+│   ├── escenario-videojuegos.css # Escenario retro de la categoría videojuegos
+│   ├── escenario-videojuegos.js  # Vidas y estados del escenario arcade
 │   └── img/industrial/           # Capas PNG del escenario industrial
 └── tests/
     └── test_flujo.py              # Pruebas automatizadas del flujo
@@ -230,8 +232,9 @@ de la sesión; sus estadísticas guardadas permanecen.
   vistas que presentan categorías o estilos específicos, si corresponde.
 - Los colores generales y la legibilidad de la palabra y letras se ajustan en
   `static/styles.css`.
-- Los escenarios de Comida y Películas tienen lógica visual propia en sus
-  archivos `.js` y `.css`. Las demás categorías usan el diseño temático general.
+- Comida, Películas, Industrial y Videojuegos tienen escenarios visuales propios
+  en sus archivos `.js` y `.css`. Las demás categorías usan el diseño temático
+  general.
 - El número inicial de intentos está definido por
   `PartidaAhorcado.INTENTOS_INICIALES` en `models.py`. Los escenarios visuales
   actuales usan ocho vidas.
