@@ -9,7 +9,7 @@ CATEGORIAS = {
         "palabras": [
             "albondigas", "melocoton", "sandia", "asado", "chocotorta",
             "helado", "tacos", "lasaña", "hamburguesa", "milanesa", "pizza",
-            "salchipapa", "champiñones", "cocolatina", "langostinos",
+            "salchipapa", "champiñones", "chocolatina", "langostinos",
         ],
     },
     "industrial": {

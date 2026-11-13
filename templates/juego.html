@@ -10,6 +10,8 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='escenario-industrial.css') }}">
     {% elif categoria_clave == 'videojuegos' %}
         <link rel="stylesheet" href="{{ url_for('static', filename='escenario-videojuegos.css') }}">
+    {% elif categoria_clave == 'aplicaciones' %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='escenario-aplicaciones.css') }}">
     {% endif %}
 {% endblock %}
 {% block content %}
@@ -183,6 +185,61 @@
                 </div>
             </div>
         </section>
+    {% elif categoria_clave == 'aplicaciones' %}
+        <section class="stage-demo" aria-label="Escenario de la categoría aplicaciones">
+            <div class="escenario aplicaciones-stage{% if partida_terminada and palabra_resuelta %} perdio{% elif partida_terminada %} gano{% endif %}{% if vida_perdida %} recibio-dano{% endif %}" id="escenario" style="--errores: {{ intentos_iniciales - intentos }}">
+                <div class="escena" id="escena">
+                    <img class="capa" src="{{ url_for('static', filename='img/aplicaciones/cara-pintura.png') }}" alt="">
+                    <img class="capa cara-hollin" src="{{ url_for('static', filename='img/aplicaciones/explosion-cara.png') }}" alt="">
+
+                    <div class="monigote" id="monigote">
+                        <img class="capa activa" data-exp="1" src="{{ url_for('static', filename='img/aplicaciones/monigote-expresion1.png') }}" alt="">
+                        <img class="capa" data-exp="2" src="{{ url_for('static', filename='img/aplicaciones/monigote-expresion2.png') }}" alt="">
+                        <img class="capa" data-exp="3" src="{{ url_for('static', filename='img/aplicaciones/monigote-expresion3.png') }}" alt="">
+                        <img class="capa" data-exp="4" src="{{ url_for('static', filename='img/aplicaciones/monigote-expresion4.png') }}" alt="">
+                        <img class="capa" data-exp="perder" src="{{ url_for('static', filename='img/aplicaciones/monigote-expresionperder.png') }}" alt="">
+                    </div>
+
+                    <img class="capa mano" src="{{ url_for('static', filename='img/aplicaciones/manomonigote1.png') }}" alt="">
+
+                    <div class="telefono" id="telefono">
+                        <div class="pieza" id="pantallas" style="--dx:30%; --dy:-35%; --r:200deg">
+                            <img class="capa" data-p="1" src="{{ url_for('static', filename='img/aplicaciones/pantalla1.png') }}" alt="">
+                            <img class="capa" data-p="2" src="{{ url_for('static', filename='img/aplicaciones/pantalla2.png') }}" alt="">
+                            <img class="capa" data-p="3" src="{{ url_for('static', filename='img/aplicaciones/pantalla3.png') }}" alt="">
+                            <img class="capa" data-p="4" src="{{ url_for('static', filename='img/aplicaciones/pantalla4.png') }}" alt="">
+                            <img class="capa activa" data-p="5" src="{{ url_for('static', filename='img/aplicaciones/pantalla5.png') }}" alt="">
+                        </div>
+                        <img class="capa pieza" style="--dx:15%; --dy:40%; --r:140deg" src="{{ url_for('static', filename='img/aplicaciones/telefono.png') }}" alt="">
+                    </div>
+
+                    <img class="capa mano" src="{{ url_for('static', filename='img/aplicaciones/manomonigote2.png') }}" alt="">
+                    <img class="capa manos-explotadas" src="{{ url_for('static', filename='img/aplicaciones/manos-explosion.png') }}" alt="">
+
+                    <div class="ex" style="--t:30%; background:#FAC775"></div>
+                    <div class="ex e2" style="--t:22%; background:#EF9F27"></div>
+                    <div class="ex e3" style="--t:13%; background:#E24B4A"></div>
+                </div>
+                <div class="panel">
+                    <div class="vidas">
+                        <span>Vidas</span>
+                        <span id="pips"></span>
+                        <span id="vidas-num">{{ intentos }}</span>
+                    </div>
+                    <div id="mensaje" role="status" aria-live="polite">
+                        {% if partida_terminada and palabra_resuelta %}
+                            El teléfono explotó. Perdiste
+                        {% elif partida_terminada %}
+                            ¡Ganaste!
+                        {% elif vida_perdida %}
+                            ¡Cuidado con el teléfono!
+                        {% else %}
+                            Temática: aplicaciones
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
     {% endif %}
 
     <section class="play-area">
@@ -229,5 +286,7 @@
     <script src="{{ url_for('static', filename='escenario-industrial.js') }}"></script>
 {% elif categoria_clave == 'videojuegos' %}
     <script src="{{ url_for('static', filename='escenario-videojuegos.js') }}"></script>
+{% elif categoria_clave == 'aplicaciones' %}
+    <script src="{{ url_for('static', filename='escenario-aplicaciones.js') }}"></script>
 {% endif %}
 {% endblock %}

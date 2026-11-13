@@ -264,6 +264,60 @@ class FlujoAhorcadoTests(unittest.TestCase):
         self.assertIn(b'class="arcade-stage perdio"', respuesta.data)
         self.assertIn(b"GAME OVER", respuesta.data)
 
+    def test_escenario_aplicaciones_carga_interfaz_y_refleja_la_partida(self):
+        self.iniciar_sesion()
+        self.cliente.post("/categorias/aplicaciones/jugar")
+
+        respuesta = self.cliente.get("/jugar")
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertIn(b"escenario-aplicaciones.css", respuesta.data)
+        self.assertIn(b"escenario-aplicaciones.js", respuesta.data)
+        self.assertIn(b"img/aplicaciones/telefono.png", respuesta.data)
+        for ruta in (
+            "/static/escenario-aplicaciones.css",
+            "/static/escenario-aplicaciones.js",
+        ):
+            respuesta_asset = self.cliente.get(ruta)
+            self.assertEqual(respuesta_asset.status_code, 200)
+            respuesta_asset.close()
+
+        imagenes = (
+            "cara-pintura.png", "explosion-cara.png", "monigote-expresion1.png",
+            "monigote-expresion2.png", "monigote-expresion3.png",
+            "monigote-expresion4.png", "monigote-expresionperder.png",
+            "manomonigote1.png", "manomonigote2.png", "manos-explosion.png",
+            "pantalla1.png", "pantalla2.png", "pantalla3.png", "pantalla4.png",
+            "pantalla5.png", "telefono.png",
+        )
+        for imagen in imagenes:
+            respuesta_asset = self.cliente.get(f"/static/img/aplicaciones/{imagen}")
+            self.assertEqual(respuesta_asset.status_code, 200, imagen)
+            respuesta_asset.close()
+
+        with self.cliente.session_transaction() as estado:
+            palabra = estado["partida"]["palabra"].upper()
+        letras_ausentes = [letra for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if letra not in palabra]
+
+        respuesta = self.cliente.post("/jugar", data={"letra": letras_ausentes[0]})
+        self.assertIn(b'data-vida-perdida="1"', respuesta.data)
+        self.assertIn(b"--errores: 1", respuesta.data)
+        respuesta = self.cliente.post("/jugar", data={"letra": letras_ausentes[0]})
+        self.assertIn(b'data-vida-perdida="0"', respuesta.data)
+
+        for letra in sorted(set(caracter for caracter in palabra if caracter.isalpha())):
+            respuesta = self.cliente.post("/jugar", data={"letra": letra})
+        self.assertIn(b'data-ganado="1"', respuesta.data)
+        self.assertIn(b'class="escenario aplicaciones-stage gano"', respuesta.data)
+
+        self.cliente.get("/reiniciar")
+        with self.cliente.session_transaction() as estado:
+            palabra = estado["partida"]["palabra"].upper()
+        letras_ausentes = [letra for letra in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if letra not in palabra]
+        for letra in letras_ausentes[:8]:
+            respuesta = self.cliente.post("/jugar", data={"letra": letra})
+        self.assertIn(b'data-perdio="1"', respuesta.data)
+        self.assertIn(b'class="escenario aplicaciones-stage perdio recibio-dano"', respuesta.data)
+
     def test_ranking_ordena_por_victorias(self):
         self.iniciar_sesion()
         self.repositorio.jugadores["Beto"] = SimpleNamespace(

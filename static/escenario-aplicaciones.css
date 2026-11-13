@@ -1,0 +1,145 @@
+.aplicaciones-stage .escena {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 12px 30px rgba(22, 57, 48, .15);
+}
+
+.aplicaciones-stage .capa,
+.aplicaciones-stage .monigote,
+.aplicaciones-stage .telefono,
+.aplicaciones-stage .pieza {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.aplicaciones-stage .capa { display: block; }
+.aplicaciones-stage .monigote .capa,
+.aplicaciones-stage #pantallas .capa { opacity: 0; }
+.aplicaciones-stage .monigote .capa.activa,
+.aplicaciones-stage #pantallas .capa.activa { opacity: 1; }
+
+.aplicaciones-stage .telefono {
+    transform-origin: 53.8% 54.2%;
+    animation: telefono-tiembla var(--duracion-temblor, 1.2s) ease-in-out infinite;
+    transition: filter .2s ease;
+}
+
+.aplicaciones-stage.recibio-dano .telefono { filter: brightness(1.35); }
+.aplicaciones-stage .pieza { transform-origin: 55.2% 49.6%; }
+
+.aplicaciones-stage .manos-explotadas,
+.aplicaciones-stage .cara-hollin {
+    opacity: 0;
+}
+
+.aplicaciones-stage.perdio .mano { display: none; }
+.aplicaciones-stage.perdio .manos-explotadas {
+    opacity: 1;
+    transition: opacity .2s .2s;
+}
+.aplicaciones-stage.perdio .cara-hollin {
+    opacity: 1;
+    transition: opacity .4s .25s;
+}
+.aplicaciones-stage.perdio .telefono { animation: none; }
+.aplicaciones-stage.perdio .pieza { animation: pieza-vuela 1s ease-out forwards; }
+
+.aplicaciones-stage.recibio-dano .escena::after {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    background: rgba(255, 255, 255, .48);
+    content: "";
+    pointer-events: none;
+    animation: destello .35s ease-out;
+}
+
+.aplicaciones-stage .ex {
+    position: absolute;
+    z-index: 6;
+    top: 49.6%;
+    left: 55.2%;
+    width: var(--t);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transform-origin: center;
+}
+
+.aplicaciones-stage.perdio .ex { animation: explosion .7s ease-out forwards; }
+.aplicaciones-stage.perdio .e2 { animation-delay: .05s; }
+.aplicaciones-stage.perdio .e3 { animation-delay: .1s; }
+
+.aplicaciones-stage .panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.aplicaciones-stage .vidas {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.aplicaciones-stage #pips { display: inline-flex; gap: 6px; }
+.aplicaciones-stage .pip {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #378add;
+    transition: background .3s;
+}
+.aplicaciones-stage .pip.perdida { background: #d3d1c7; }
+.aplicaciones-stage #mensaje.perdiste { color: #a32d2d; font-weight: 500; }
+.aplicaciones-stage #mensaje.ganaste { color: #3b6d11; font-weight: 500; }
+
+@keyframes telefono-tiembla {
+    0%, 100% { transform: translate(0, 0) rotate(0); }
+    25% {
+        transform: translate(var(--temblor-x, 0), var(--temblor-y-negativo, 0))
+            rotate(var(--temblor-angulo, 0));
+    }
+    75% {
+        transform: translate(var(--temblor-x-negativo, 0), var(--temblor-y, 0))
+            rotate(var(--temblor-angulo-negativo, 0));
+    }
+}
+
+@keyframes destello {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes pieza-vuela {
+    0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+    100% { transform: translate(var(--dx, 15%), var(--dy, -25%)) rotate(var(--r, 140deg)); opacity: 0; }
+}
+
+@keyframes explosion {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    50% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1.3); opacity: 0; }
+}
+
+@media (max-width: 480px) {
+    .aplicaciones-stage .panel { gap: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .aplicaciones-stage .telefono,
+    .aplicaciones-stage.recibio-dano .escena::after,
+    .aplicaciones-stage.perdio .pieza,
+    .aplicaciones-stage.perdio .ex { animation: none; }
+}
