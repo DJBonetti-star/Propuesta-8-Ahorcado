@@ -1,0 +1,4 @@
+Riesgos priorizados:
+1. Manipulación del estado de partida y del ranking.
+2. Clave secreta insegura o modo de depuración habilitado.
+3. Acceso público o excesivo a MongoDB.
