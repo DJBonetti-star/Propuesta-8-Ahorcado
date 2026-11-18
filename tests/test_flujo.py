@@ -1,10 +1,16 @@
+import os
 import unittest
 from types import SimpleNamespace
+from unittest.mock import Mock, patch
+
+os.environ.setdefault("FLASK_SECRET_KEY", "test-only-secret-key")
 
 from app import crear_app
 from categorias import CATEGORIAS
-from pymongo.errors import DuplicateKeyError
+from pymongo.errors import DuplicateKeyError, PyMongoError
 from werkzeug.security import check_password_hash
+
+from repositories import RepositorioJugadores
 
 
 class RepositorioEnMemoria:
@@ -13,10 +19,6 @@ class RepositorioEnMemoria:
 
     def crear_cuenta(self, nombre, hash_contrasena):
         if nombre in self.jugadores:
-            jugador = self.jugadores[nombre]
-            if not hasattr(jugador, "hash_contrasena"):
-                jugador.hash_contrasena = hash_contrasena
-                return
             raise DuplicateKeyError("duplicate key")
         self.jugadores[nombre] = SimpleNamespace(
             nombre=nombre,
@@ -50,6 +52,57 @@ class FlujoAhorcadoTests(unittest.TestCase):
         self.app = crear_app(self.repositorio)
         self.app.config.update(TESTING=True, SECRET_KEY="test")
         self.cliente = self.app.test_client()
+
+    def test_la_aplicacion_rechaza_iniciarse_sin_clave_secreta(self):
+        with patch.dict(os.environ, {"FLASK_SECRET_KEY": ""}):
+            with self.assertRaisesRegex(RuntimeError, "FLASK_SECRET_KEY"):
+                crear_app(self.repositorio)
+
+    def test_el_modo_depuracion_esta_desactivado(self):
+        self.assertFalse(self.app.debug)
+
+    def test_el_nombre_del_jugador_se_escapa_en_menu_y_ranking(self):
+        nombre = "<script>alert(1)</script>"
+        respuesta = self.cliente.post(
+            "/registrarse",
+            data={
+                "nombre": nombre,
+                "contrasena": "contrasena-segura",
+                "confirmacion": "contrasena-segura",
+            },
+        )
+        self.assertTrue(respuesta.location.endswith("/menu"))
+
+        for ruta in ("/menu", "/ranking"):
+            respuesta = self.cliente.get(ruta)
+            self.assertEqual(respuesta.status_code, 200)
+            self.assertNotIn(b"<script>", respuesta.data)
+            self.assertIn(b"&lt;script&gt;", respuesta.data)
+
+    def test_los_errores_de_mongodb_se_registran_sin_exponer_detalles(self):
+        class RepositorioConError(RepositorioEnMemoria):
+            def crear_cuenta(self, nombre, hash_contrasena):
+                raise PyMongoError("detalle interno confidencial")
+
+        app = crear_app(RepositorioConError())
+        app.config.update(TESTING=True, SECRET_KEY="test")
+        cliente = app.test_client()
+
+        with self.assertLogs(app.logger, level="ERROR") as registros:
+            respuesta = cliente.post(
+                "/registrarse",
+                data={
+                    "nombre": "Ana",
+                    "contrasena": "contrasena-segura",
+                    "confirmacion": "contrasena-segura",
+                },
+                follow_redirects=True,
+            )
+
+        texto = respuesta.get_data(as_text=True)
+        self.assertIn("No se pudo crear la cuenta.", texto)
+        self.assertNotIn("detalle interno confidencial", texto)
+        self.assertNotIn("detalle interno confidencial", "\n".join(registros.output))
 
     def iniciar_sesion(self):
         respuesta = self.cliente.post(
@@ -129,7 +182,7 @@ class FlujoAhorcadoTests(unittest.TestCase):
         self.assertTrue(respuesta.location.endswith("/menu"))
         self.assertEqual(self.cliente.get("/menu").status_code, 200)
 
-    def test_registro_agrega_contrasena_a_perfil_existente_sin_perder_estadisticas(self):
+    def test_registro_publico_no_puede_adoptar_un_perfil_sin_hash(self):
         self.repositorio.jugadores["Ana"] = SimpleNamespace(
             nombre="Ana",
             juegos_ganados=3,
@@ -144,11 +197,22 @@ class FlujoAhorcadoTests(unittest.TestCase):
             },
         )
 
-        self.assertTrue(respuesta.location.endswith("/menu"))
+        self.assertTrue(respuesta.location.endswith("/registrarse"))
         jugador = self.repositorio.buscar("Ana")
         self.assertEqual(jugador.juegos_ganados, 3)
         self.assertEqual(jugador.juegos_perdidos, 1)
-        self.assertTrue(check_password_hash(jugador.hash_contrasena, "contrasena-segura"))
+        self.assertFalse(hasattr(jugador, "hash_contrasena"))
+        self.assertEqual(self.cliente.get("/menu").status_code, 302)
+
+    def test_repositorio_no_actualiza_un_perfil_existente_al_registrar(self):
+        coleccion = Mock()
+        coleccion.insert_one.side_effect = DuplicateKeyError("duplicate key")
+        repositorio = RepositorioJugadores(coleccion)
+
+        with self.assertRaises(DuplicateKeyError):
+            repositorio.crear_cuenta("Ana", "hash nuevo")
+
+        coleccion.update_one.assert_not_called()
 
     def test_categoria_partida_letras_y_resultado(self):
         self.iniciar_sesion()

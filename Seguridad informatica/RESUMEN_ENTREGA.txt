@@ -1,0 +1,20 @@
+﻿Proyecto: La ultima letra
+Entregables de seguridad:
+1. PARTE2_Analisis_de_Riesgos.pdf
+2. PARTE3_Desarrollo_Seguro.pdf
+3. SECURITY.md
+
+Verificacion:
+14 pruebas automatizadas ejecutadas: OK
+Los archivos Python modificados compilaron con py_compile.
+
+Protecciones implementadas y comprobadas:
+- Sanitizacion XSS con escape automatico de Jinja2 y prueba automatizada.
+- Hashing de contrasenas con Werkzeug, registro y verificacion.
+- Manejo seguro de excepciones PyMongoError sin exponer detalles al usuario.
+- Clave de sesion obligatoria y depurador desactivado.
+- Registro publico bloqueado para perfiles existentes sin hash.
+
+Pendiente externo:
+- Verificar secretos y HTTPS/Gunicorn en Render.
+- Verificar acceso de red y permisos minimos en MongoDB Atlas.

@@ -95,13 +95,13 @@ python app.py
 ```
 
 No publiques ni compartas la cadena de conexión ni la clave secreta. La clave
-`FLASK_SECRET_KEY` protege la sesión de Flask; define una clave privada propia,
-especialmente si despliegas la aplicación. La aplicación también tiene una clave
-predeterminada para facilitar el inicio local, pero no debe usarse en producción.
+`FLASK_SECRET_KEY` protege la sesión de Flask y es obligatoria para iniciar la
+aplicación. Define una clave privada y aleatoria en tu entorno local y en la
+sección **Environment** de Render; no la escribas en el código ni la compartas.
 
-Deja abierta la ventana de PowerShell mientras usas el juego. Flask inicia el
-servidor en modo de depuración al ejecutar `app.py`; ese modo es únicamente para
-desarrollo y no debe exponerse en Internet.
+Deja abierta la ventana de PowerShell mientras usas el juego. El servidor de
+desarrollo inicia con el modo de depuración desactivado; Render debe ejecutar la
+aplicación con Gunicorn y HTTPS.
 
 ### 6. Abrir el juego
 
@@ -217,9 +217,11 @@ documento contiene el nombre, las estadísticas y el hash de la contraseña
 }
 ```
 
-Los nombres de cuenta son únicos. Si ya hay un perfil antiguo sin contraseña,
-el registro con ese mismo nombre le añade una contraseña y conserva sus
-estadísticas. Las estadísticas se actualizan al finalizar cada partida. El
+Los nombres de cuenta son únicos. El registro no permite apropiarse de un perfil
+antiguo que no tenga hash de contraseña. Para recuperar ese tipo de cuenta se
+requiere una verificación de identidad realizada por una persona autorizada; la
+recuperación debe añadir únicamente un hash nuevo y conservar las estadísticas
+existentes. Las estadísticas se actualizan al finalizar cada partida. El
 ranking muestra hasta 20 jugadores, ordenados por victorias descendentes,
 derrotas ascendentes y nombre.
 

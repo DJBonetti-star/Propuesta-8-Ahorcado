@@ -12,10 +12,11 @@ from repositories import RepositorioJugadores
 
 def crear_app(repositorio_jugadores=None):
     app = Flask(__name__)
-    app.secret_key = os.environ.get(
-        "FLASK_SECRET_KEY",
-        "clave-juego-ahorcado",
-    )
+    secret_key = os.environ.get("FLASK_SECRET_KEY")
+    if not secret_key or not secret_key.strip():
+        raise RuntimeError("Configura FLASK_SECRET_KEY antes de iniciar la aplicación.")
+    app.secret_key = secret_key
+    app.config["DEBUG"] = False
 
     if repositorio_jugadores is None:
         cliente_mongo = MongoClient(
@@ -27,13 +28,21 @@ def crear_app(repositorio_jugadores=None):
 
     app.config["REPOSITORIO_JUGADORES"] = repositorio_jugadores
 
+    def registrar_error_mongodb(operacion, error):
+        app.logger.error(
+            "Error de MongoDB durante %s (%s).",
+            operacion,
+            type(error).__name__,
+        )
+
     @app.route("/", methods=["GET"])
     def inicio():
         jugador = None
         if "jugador" in session:
             try:
                 jugador = repositorio_jugadores.buscar(session["jugador"])
-            except PyMongoError:
+            except PyMongoError as error:
+                registrar_error_mongodb("consulta del jugador", error)
                 flash("No se pudieron consultar los datos del jugador en MongoDB.", "error")
         return render_template("index.html", jugador=jugador)
 
@@ -63,7 +72,8 @@ def crear_app(repositorio_jugadores=None):
         except DuplicateKeyError:
             flash("Ese nombre ya está registrado. Inicia sesión o elige otro.", "error")
             return redirect(url_for("registrarse"))
-        except PyMongoError:
+        except PyMongoError as error:
+            registrar_error_mongodb("creación de cuenta", error)
             flash("No se pudo crear la cuenta. Verifica la conexión con MongoDB.", "error")
             return redirect(url_for("registrarse"))
 
@@ -79,7 +89,8 @@ def crear_app(repositorio_jugadores=None):
         contrasena = request.form.get("contrasena", "")
         try:
             hash_guardado = repositorio_jugadores.obtener_hash_contrasena(nombre)
-        except PyMongoError:
+        except PyMongoError as error:
+            registrar_error_mongodb("inicio de sesión", error)
             flash("No se pudo iniciar sesión. Verifica la conexión con MongoDB.", "error")
             return redirect(url_for("iniciar_sesion"))
 
@@ -120,7 +131,8 @@ def crear_app(repositorio_jugadores=None):
             return redirect(url_for("inicio"))
         try:
             jugadores = repositorio_jugadores.ranking()
-        except PyMongoError:
+        except PyMongoError as error:
+            registrar_error_mongodb("consulta del ranking", error)
             jugadores = []
             flash("No se pudo consultar el ranking en MongoDB.", "error")
         return render_template("ranking.html", jugadores=jugadores)
@@ -163,7 +175,8 @@ def crear_app(repositorio_jugadores=None):
                     session["jugador"],
                     gano,
                 )
-            except PyMongoError:
+            except PyMongoError as error:
+                registrar_error_mongodb("registro del resultado", error)
                 flash("No se pudo actualizar el resultado en MongoDB. Inténtalo de nuevo.", "error")
             else:
                 session["resultado_registrado"] = True
@@ -212,7 +225,8 @@ def crear_app(repositorio_jugadores=None):
     def buscar_jugador():
         try:
             return repositorio_jugadores.buscar(session["jugador"])
-        except PyMongoError:
+        except PyMongoError as error:
+            registrar_error_mongodb("consulta del jugador", error)
             flash("No se pudieron consultar los datos del jugador en MongoDB.", "error")
             return None
 
@@ -223,4 +237,4 @@ app = crear_app()
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
