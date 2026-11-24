@@ -169,12 +169,16 @@ juego_ahorcado-main/
   aplicación sin una base de datos real.
 - **`models.py`** contiene `Jugador` (estadísticas), `Palabra` (letras
   descubiertas) y `PartidaAhorcado` (intentos, letras probadas y estado de
-  victoria o derrota). También permite convertir la partida a y desde el estado
-  serializable guardado en la sesión.
+  victoria o derrota). Sus atributos se mantienen privados y se consultan
+  mediante propiedades; las colecciones se exponen como vistas inmutables.
+  También permite convertir la partida a y desde el estado serializable guardado
+  en la sesión.
 - **`categorias.py`** define las palabras y etiquetas visuales de las categorías
   y elige una palabra al azar.
-- **`repositories.py`** implementa las operaciones de persistencia de jugadores
-  usando MongoDB.
+- **`repositories.py`** implementa el CRUD de jugadores en MongoDB: `crear_cuenta`
+  (Create), `buscar` (Read), `registrar_resultado` (Update) y `eliminar`
+  (Delete). Los errores de persistencia se propagan para que la aplicación los
+  registre y los comunique de forma segura.
 - **`templates/`** contiene las páginas HTML de Jinja. `base.html` aporta el
   marco común y las demás plantillas extienden ese marco.
 - **`static/`** contiene los estilos y el JavaScript de los escenarios
@@ -224,6 +228,10 @@ recuperación debe añadir únicamente un hash nuevo y conservar las estadístic
 existentes. Las estadísticas se actualizan al finalizar cada partida. El
 ranking muestra hasta 20 jugadores, ordenados por victorias descendentes,
 derrotas ascendentes y nombre.
+
+Las cuatro operaciones CRUD están encapsuladas en `RepositorioJugadores` y
+operan directamente sobre la colección MongoDB. La eliminación está disponible
+en el repositorio y no se expone como una acción pública en la interfaz web.
 
 La palabra, las letras intentadas y los intentos restantes viven en la sesión
 del navegador, no en MongoDB. Al cerrar la sesión se elimina el jugador actual

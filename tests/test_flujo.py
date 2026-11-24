@@ -7,6 +7,7 @@ os.environ.setdefault("FLASK_SECRET_KEY", "test-only-secret-key")
 
 from app import crear_app
 from categorias import CATEGORIAS
+from models import Jugador, Palabra, PartidaAhorcado
 from pymongo.errors import DuplicateKeyError, PyMongoError
 from werkzeug.security import check_password_hash
 
@@ -213,6 +214,61 @@ class FlujoAhorcadoTests(unittest.TestCase):
             repositorio.crear_cuenta("Ana", "hash nuevo")
 
         coleccion.update_one.assert_not_called()
+
+    def test_repositorio_expone_operaciones_crud_de_jugadores(self):
+        coleccion = Mock()
+        coleccion.find_one.return_value = {
+            "nombre": "Ana",
+            "juegos_ganados": 2,
+            "juegos_perdidos": 1,
+        }
+        coleccion.delete_one.return_value = SimpleNamespace(deleted_count=1)
+        repositorio = RepositorioJugadores(coleccion)
+
+        repositorio.crear_cuenta("Ana", "hash")
+        jugador = repositorio.buscar("Ana")
+        repositorio.registrar_resultado("Ana", gano=True)
+        eliminado = repositorio.eliminar("Ana")
+
+        self.assertIsInstance(jugador, Jugador)
+        self.assertEqual(jugador.juegos_ganados, 2)
+        coleccion.insert_one.assert_called_once_with(
+            {
+                "nombre": "Ana",
+                "hash_contrasena": "hash",
+                "juegos_ganados": 0,
+                "juegos_perdidos": 0,
+            }
+        )
+        coleccion.update_one.assert_called_once_with(
+            {"nombre": "Ana"},
+            {"$inc": {"juegos_ganados": 1}},
+        )
+        coleccion.delete_one.assert_called_once_with({"nombre": "Ana"})
+        self.assertTrue(eliminado)
+
+        coleccion.delete_one.return_value = SimpleNamespace(deleted_count=0)
+        self.assertFalse(repositorio.eliminar("Ana"))
+
+    def test_modelos_encapsulan_sus_datos_y_exponen_vistas_seguras(self):
+        palabra = Palabra("gato")
+        partida = PartidaAhorcado(palabra)
+
+        partida.comprobar_letra("g")
+        letras_correctas = palabra.letras_correctas
+        letras_intentadas = partida.letras_intentadas
+        estado = partida.a_estado()
+        estado["letras_correctas"].append("X")
+        estado["letras_intentadas"].append("Y")
+
+        self.assertEqual(letras_correctas, ("G",))
+        self.assertEqual(letras_intentadas, ("G",))
+        self.assertEqual(palabra.letras_correctas, ("G",))
+        self.assertEqual(partida.letras_intentadas, ("G",))
+        with self.assertRaises(AttributeError):
+            palabra.palabra = "otra"
+        with self.assertRaises(AttributeError):
+            partida.intentos_restantes = 0
 
     def test_categoria_partida_letras_y_resultado(self):
         self.iniciar_sesion()
